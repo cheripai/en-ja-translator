@@ -1,7 +1,6 @@
+import constants as c
 import re
 from JapaneseTokenizer import JumanppWrapper
-
-MAX_LENGTH = 30
 
 class Lang:
     def __init__(self, name):
@@ -51,8 +50,8 @@ def read_langs(en_file, ja_file):
 
 
 def filter_pair(p):
-    return len(p[0].split(" ")) < MAX_LENGTH and \
-        len(p[1].split(" ")) < MAX_LENGTH
+    return len(p[0].split(" ")) < c.MAX_LENGTH and \
+        len(p[1].split(" ")) < c.MAX_LENGTH
 
 
 def filter_pairs(pairs):
