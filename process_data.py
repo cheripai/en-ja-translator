@@ -1,27 +1,8 @@
 import constants as c
+import pickle
 import re
 from JapaneseTokenizer import JumanppWrapper
-
-class Lang:
-    def __init__(self, name):
-        self.name = name
-        self.word2index = {"SOS": 0, "EOS": 1}
-        self.word2count = {}
-        self.index2word = {0: "SOS", 1: "EOS"}
-        self.n_words = 2
-
-    def add_sentence(self, sentence):
-        for word in sentence.split(" "):
-            self.add_word(word)
-
-    def add_word(self, word):
-        if word in self.word2count:
-            self.word2count[word] += 1
-        else:
-            self.word2index[word] = self.n_words
-            self.word2count[word] = 1
-            self.index2word[self.n_words] = word
-            self.n_words += 1
+from Lang import Lang
 
 
 def normalize_en(s):
@@ -66,13 +47,13 @@ def prepare_data(en_file, ja_file):
     for pair in pairs:
         en.add_sentence(pair[0])
         ja.add_sentence(pair[1])
-    print(en.name, en.n_words)
-    print(ja.name, ja.n_words)
+    print("Number of {} words: {}".format(en.name, en.n_words))
+    print("Number of {} words: {}".format(ja.name, ja.n_words))
     return en, ja, pairs
 
 
 if __name__ == "__main__":
-    en, ja, pairs = prepare_data("data/en.txt", "data/ja.txt")
-    pickle.dump(en, open("data/en.pkl", "wb"))
-    pickle.dump(ja, open("data/ja.pkl", "wb"))
-    pickle.dump(pairs, open("data/en_ja_pairs.pkl", "wb"))
+    en, ja, pairs = prepare_data(c.EN_PATH, c.JA_PATH)
+    pickle.dump(en, open(c.EN_LANG_PATH, "wb"))
+    pickle.dump(ja, open(c.JA_LANG_PATH, "wb"))
+    pickle.dump(pairs, open(c.PAIRS_PATH, "wb"))
