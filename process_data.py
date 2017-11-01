@@ -6,12 +6,16 @@ from Lang import Lang
 
 
 def normalize_en(s):
+    """ Processes an English string by removing non-alphabetical characters (besides .!?).
+    """
     s = s.lower().strip()
     s = re.sub(r"[^\w.!?]+", r" ", s, flags=re.UNICODE)
     return s
 
 
 def normalize_ja(s, segmenter):
+    """ Processes a Japanese character by removing non-word characters and separating tokens with spaces.
+    """
     s = re.sub(r"[^\w.!?。]+", r" ", s, flags=re.UNICODE)
     s = " ".join(segmenter.tokenize(sentence=s, is_feature=False, is_surface=True).convert_list_object())
     s = re.sub("\s+", " ", s).strip()
@@ -19,6 +23,8 @@ def normalize_ja(s, segmenter):
 
 
 def read_langs(en_file, ja_file):
+    """ Reads corpuses and returns a Lang object for each language and all normalized sentence pairs.
+    """
     segmenter = JumanppWrapper()
     en_lines = open(en_file).read().strip().split("\n")
     ja_lines = open(ja_file).read().strip().split("\n")
@@ -31,6 +37,8 @@ def read_langs(en_file, ja_file):
 
 
 def filter_pair(p):
+    """ Filter out sentences that exceed maximum length.
+    """
     return len(p[0].split(" ")) < c.MAX_LENGTH and \
         len(p[1].split(" ")) < c.MAX_LENGTH
 
@@ -39,8 +47,8 @@ def filter_pairs(pairs):
     return [pair for pair in pairs if filter_pair(pair)]
 
 
-def prepare_data(en_file, ja_file):
-    en, ja, pairs = read_langs(en_file, ja_file)
+if __name__ == "__main__":
+    en, ja, pairs = read_langs(c.EN_PATH, c.JA_PATH)
     print("Number of sentences:", len(pairs))
     pairs = filter_pairs(pairs)
     print("Number of trimmed sentences:", len(pairs))
@@ -49,11 +57,7 @@ def prepare_data(en_file, ja_file):
         ja.add_sentence(pair[1])
     print("Number of {} words: {}".format(en.name, en.n_words))
     print("Number of {} words: {}".format(ja.name, ja.n_words))
-    return en, ja, pairs
 
-
-if __name__ == "__main__":
-    en, ja, pairs = prepare_data(c.EN_PATH, c.JA_PATH)
     pickle.dump(en, open(c.EN_LANG_PATH, "wb"))
     pickle.dump(ja, open(c.JA_LANG_PATH, "wb"))
     pickle.dump(pairs, open(c.PAIRS_PATH, "wb"))

@@ -6,6 +6,9 @@ from torch.autograd import Variable
 
 
 class Coder(nn.Module):
+    """ Parent class of Encoder and Decoder.
+        Contains shared methods of child classes.
+    """
     def __init__(self):
         super(Coder, self).__init__()
 
@@ -18,6 +21,8 @@ class Coder(nn.Module):
 
 
 class Encoder(Coder):
+    """ Encodes text of the input language into a distributed representation.
+    """
     def __init__(self, input_size, hidden_size, emb_weights=None, directions=1, n_layers=1, dropout_p=0.1):
         super(Encoder, self).__init__()
         self.n_layers = n_layers
@@ -49,6 +54,9 @@ class Encoder(Coder):
 
 
 class Decoder(Coder):
+    """ Decodes a distributed representation into text in the target language.
+        Uses attention over the Encoder's outputs.
+    """
     def __init__(self,
                  hidden_size,
                  output_size,
@@ -82,7 +90,7 @@ class Decoder(Coder):
         if emb_weights is not None:
             self.embedding.weight = nn.Parameter(emb_weights)
 
-    def forward(self, input, hidden, encoder_output, encoder_outputs):
+    def forward(self, input, hidden, encoder_outputs):
         embedded = self.embedding(input)
         embedded = self.dropout(embedded)
 

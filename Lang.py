@@ -5,6 +5,8 @@ from torch.utils.data import Dataset
 
 
 class Lang:
+    """" Holds vocabulary for each language and dictionaries to convert words to and from indexes
+    """
     def __init__(self, name):
         self.name = name
         self.word2index = {"SOS": 0, "EOS": 1}
@@ -27,6 +29,9 @@ class Lang:
 
 
 class LangDataset(Dataset):
+    """ Subclass of Pytorch Dataset.
+        Holds sentence data from both languages.
+    """
     def __init__(self, pairs, input_lang, output_lang, max_length=30):
         self.pairs = pairs
         self.input_lang = input_lang
