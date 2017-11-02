@@ -135,7 +135,7 @@ if __name__ == "__main__":
         decoder = decoder.cuda()
 
     print("Training...")
-    train_iters(encoder, decoder, trainloader, validloader, 10, lr=c.LR)
+    train_iters(encoder, decoder, trainloader, validloader, 5, lr=c.LR)
 
     torch.save(encoder.state_dict(), c.ENCODER_PATH)
     torch.save(decoder.state_dict(), c.DECODER_PATH)
