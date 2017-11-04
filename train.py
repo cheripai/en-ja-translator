@@ -4,7 +4,7 @@ import random
 import torch
 import torch.nn as nn
 import torch.optim as optim
-from Lang import Lang, LangDataset, sentence2indexes
+from Lang import Lang, LangDataset
 from models.EncoderDecoder import Encoder, Decoder
 from torch.autograd import Variable
 from torch.utils.data import DataLoader
