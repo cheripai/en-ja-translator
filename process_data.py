@@ -1,4 +1,5 @@
 import constants as c
+import multiprocessing as mp
 import pickle
 import re
 from JapaneseTokenizer import JumanppWrapper
@@ -14,7 +15,7 @@ def normalize_en(s):
 
 
 def normalize_ja(s, segmenter):
-    """ Processes a Japanese character by removing non-word characters and separating tokens with spaces.
+    """ Processes a Japanese string by removing non-word characters and separating tokens with spaces.
     """
     s = s.strip()
     s = re.sub(r"[^\w.!?。]+", r" ", s, flags=re.UNICODE)
@@ -23,13 +24,29 @@ def normalize_ja(s, segmenter):
     return s
 
 
-def read_langs(en_file, ja_file):
-    """ Reads corpuses and returns a Lang object for each language and all normalized sentence pairs.
+def normalize(en_lines, ja_lines):
+    """ Process lists of both English and Japanese strings.
     """
     segmenter = JumanppWrapper()
+    return [[normalize_en(l1), normalize_ja(l2, segmenter)] for l1, l2 in zip(en_lines, ja_lines)]
+
+
+def read_langs(en_file, ja_file, n_processes=4):
+    """ Reads corpuses and returns a Lang object for each language and all normalized sentence pairs.
+    """
     en_lines = open(en_file).read().split("\n")
     ja_lines = open(ja_file).read().split("\n")
-    pairs = [[normalize_en(l1), normalize_ja(l2, segmenter)] for l1, l2 in zip(en_lines, ja_lines)]
+
+    pool = mp.Pool(processes=n_processes)
+    interval = len(en_lines) // n_processes
+    results = [
+        pool.apply_async(
+            normalize, args=(en_lines[i * interval:(i + 1) * interval], ja_lines[i * interval:(i + 1) * interval]))
+        for i in range(n_processes)
+    ]
+    pairs = []
+    for p in results:
+        pairs += p.get()
 
     en = Lang("en")
     ja = Lang("ja")
