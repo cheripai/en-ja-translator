@@ -16,6 +16,7 @@ def normalize_en(s):
 def normalize_ja(s, segmenter):
     """ Processes a Japanese character by removing non-word characters and separating tokens with spaces.
     """
+    s = s.strip()
     s = re.sub(r"[^\w.!?。]+", r" ", s, flags=re.UNICODE)
     s = " ".join(segmenter.tokenize(sentence=s, is_feature=False, is_surface=True).convert_list_object())
     s = re.sub("\s+", " ", s).strip()
@@ -26,8 +27,8 @@ def read_langs(en_file, ja_file):
     """ Reads corpuses and returns a Lang object for each language and all normalized sentence pairs.
     """
     segmenter = JumanppWrapper()
-    en_lines = open(en_file).read().strip().split("\n")
-    ja_lines = open(ja_file).read().strip().split("\n")
+    en_lines = open(en_file).read().split("\n")
+    ja_lines = open(ja_file).read().split("\n")
     pairs = [[normalize_en(l1), normalize_ja(l2, segmenter)] for l1, l2 in zip(en_lines, ja_lines)]
 
     en = Lang("en")
