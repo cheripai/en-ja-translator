@@ -54,25 +54,45 @@ def read_langs(en_file, ja_file, n_processes=4):
     return en, ja, pairs
 
 
-def filter_pair(p):
-    """ Filter out sentences that exceed maximum length.
+def filter_pair_by_vocab(p, lang1, lang2):
+    """ Filter out sentences if they do not contain words in vocab.
     """
-    return len(p[0].split(" ")) < c.MAX_LENGTH and \
-        len(p[1].split(" ")) < c.MAX_LENGTH
+    s1 = p[0].split(" ")
+    s2 = p[1].split(" ")
+    for word in s1:
+        if word not in lang1.word2index:
+            return False
+    for word in s2:
+        if word not in lang2.word2index:
+            return False
+    return True
 
 
-def filter_pairs(pairs):
-    return [pair for pair in pairs if filter_pair(pair)]
+def filter_pair_by_len(p, maxlen=c.MAX_LENGTH):
+    """ Filter out sentences if they are greater than maximum length.
+    """
+    return len(p[0].split(" ")) < maxlen and len(p[1].split(" ")) < maxlen
+
+
+def filter_vocab(lang, min_words=2):
+    """ Filters out words from Lang with counts less than min_words in place.
+    """
+    remove_words = [key for key in lang.word2count.keys() if lang.word2count[key] < min_words]
+    for word in remove_words:
+        lang.remove_word(word)
 
 
 if __name__ == "__main__":
     en, ja, pairs = read_langs(c.EN_PATH, c.JA_PATH)
     print("Number of sentences:", len(pairs))
-    pairs = filter_pairs(pairs)
-    print("Number of trimmed sentences:", len(pairs))
+    pairs = [pair for pair in pairs if filter_pair_by_len(pair, c.MAX_LENGTH)]
     for pair in pairs:
         en.add_sentence(pair[0])
         ja.add_sentence(pair[1])
+    filter_vocab(en, c.MIN_VOCAB_WORDS)
+    filter_vocab(ja, c.MIN_VOCAB_WORDS)
+    pairs = [pair for pair in pairs if filter_pair_by_vocab(pair, en, ja)]
+    print("Number of trimmed sentences:", len(pairs))
     print("Number of {} words: {}".format(en.name, en.n_words))
     print("Number of {} words: {}".format(ja.name, ja.n_words))
 
