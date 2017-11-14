@@ -3,6 +3,7 @@ import pickle
 import torch
 from Lang import Lang, sentence2indexes
 from models.EncoderDecoder import Encoder, Decoder
+from process_data import normalize_en
 from torch.autograd import Variable
 
 
@@ -74,5 +75,7 @@ if __name__ == "__main__":
     except FileNotFoundError:
         raise Exception("Could not find model weights. Have you run train.py?")
 
-    s = evaluate(encoder, decoder, "i am a cat .")[:-1]
-    print("".join(s))
+    while True:
+        input_string = normalize_en(input("> "))
+        s = evaluate(encoder, decoder, input_string)[:-1]
+        print("".join(s))
