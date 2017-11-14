@@ -10,6 +10,7 @@ def normalize_en(s):
     """ Processes an English string by removing non-alphabetical characters (besides .!?).
     """
     s = s.lower().strip()
+    s = re.sub(r"([.!?])", r" \1", s)
     s = re.sub(r"[^\w.!?]+", r" ", s, flags=re.UNICODE)
     return s
 
