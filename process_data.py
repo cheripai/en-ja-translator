@@ -1,7 +1,9 @@
 import constants as c
 import multiprocessing as mp
+import numpy as np
 import pickle
 import re
+import torch
 from JapaneseTokenizer import JumanppWrapper
 from Lang import Lang
 
@@ -83,6 +85,48 @@ def filter_vocab(lang, min_words=2):
         lang.remove_word(word)
 
 
+def load_en_w2v(fname):
+    w2v_en = {}
+    with open(fname) as f:
+        for line in f:
+            line = line.split()
+            w = line[0]
+            v = np.array([float(x) for x in line[1:]])
+            w2v_en[w] = v
+    return w2v_en
+
+
+def load_ja_w2v(fname):
+    w2v_ja = {}
+    with open(fname) as f:
+        for line in f:
+            if "[" in line:
+                line = line.strip().replace("[", "").split()
+                _, w, v = line[0], line[1], line[2:]
+            elif "]" in line:
+                line = line.strip().replace("]", "").split()
+                v += line
+                v = np.array([float(val) for val in v])
+                w2v_ja[w] = v
+            else:
+                line = line.strip().split()
+                v += line
+    return w2v_ja
+
+
+def build_vecs(vocab, w2v, vec_dim=300):
+    vecs = np.zeros((len(vocab), vec_dim))
+    not_found = 0
+    for i, w in enumerate(vocab):
+        try:
+            vecs[i] = w2v[w]
+        except KeyError:
+            not_found += 1
+            vecs[i] = np.random.normal(scale=0.6, size=vec_dim)
+    print("Did not find {} words".format(not_found))
+    return torch.FloatTensor(vecs)
+
+
 if __name__ == "__main__":
     en, ja, pairs = read_langs(c.EN_PATH, c.JA_PATH)
     print("Number of sentences:", len(pairs))
@@ -97,6 +141,14 @@ if __name__ == "__main__":
     print("Number of {} words: {}".format(en.name, en.n_words))
     print("Number of {} words: {}".format(ja.name, ja.n_words))
 
+    w2v_en = load_en_w2v(c.EN_W2V_PATH)
+    w2v_ja = load_ja_w2v(c.JA_W2V_PATH)
+    en_vecs = build_vecs(list(en.word2index.keys()), w2v_en, vec_dim=300)
+    ja_vecs = build_vecs(list(ja.word2index.keys()), w2v_ja, vec_dim=300)
+
     pickle.dump(en, open(c.EN_LANG_PATH, "wb"))
     pickle.dump(ja, open(c.JA_LANG_PATH, "wb"))
     pickle.dump(pairs, open(c.PAIRS_PATH, "wb"))
+    pickle.dump(en_vecs, open(c.EN_VECS_PATH, "wb"))
+    pickle.dump(ja_vecs, open(c.JA_VECS_PATH, "wb"))
+
