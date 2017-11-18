@@ -105,27 +105,30 @@ def train_iters(encoder, decoder, trainloader, validloader, epochs, lr=0.001):
 
 
 if __name__ == "__main__":
-    input_lang = pickle.load(open(c.EN_LANG_PATH, "rb"))
-    output_lang = pickle.load(open(c.JA_LANG_PATH, "rb"))
+    en = pickle.load(open(c.EN_LANG_PATH, "rb"))
+    ja = pickle.load(open(c.JA_LANG_PATH, "rb"))
+    en_vecs = pickle.load(open(c.EN_VECS_PATH, "rb"))
+    ja_vecs = pickle.load(open(c.JA_VECS_PATH, "rb"))
+
     pairs = pickle.load(open(c.PAIRS_PATH, "rb"))
 
     train_pairs, valid_pairs = train_test_split(pairs, test_size=c.TEST_SIZE)
-    trainset = LangDataset(train_pairs, input_lang, output_lang)
-    validset = LangDataset(valid_pairs, input_lang, output_lang)
+    trainset = LangDataset(train_pairs, en, ja)
+    validset = LangDataset(valid_pairs, en, ja)
     trainloader = DataLoader(trainset, batch_size=c.BATCH_SIZE, shuffle=True, collate_fn=trainset.collate)
     validloader = DataLoader(validset, batch_size=c.BATCH_SIZE, shuffle=True, collate_fn=validset.collate)
 
     encoder = Encoder(
-        input_lang.n_words,
+        en.n_words,
         c.HIDDEN_SIZE,
-        emb_weights=None,
+        emb_weights=en_vecs,
         directions=c.DIRECTIONS,
         n_layers=c.LAYERS,
         dropout_p=c.DROPOUT)
     decoder = Decoder(
         c.HIDDEN_SIZE,
-        output_lang.n_words,
-        emb_weights=None,
+        ja.n_words,
+        emb_weights=ja_vecs,
         directions=c.DIRECTIONS,
         n_layers=c.LAYERS,
         dropout_p=c.DROPOUT)
@@ -135,7 +138,7 @@ if __name__ == "__main__":
         decoder = decoder.cuda()
 
     print("Training...")
-    train_iters(encoder, decoder, trainloader, validloader, 5, lr=c.LR)
+    train_iters(encoder, decoder, trainloader, validloader, 15, lr=c.LR)
 
     torch.save(encoder.state_dict(), c.ENCODER_PATH)
     torch.save(decoder.state_dict(), c.DECODER_PATH)
