@@ -1,4 +1,5 @@
 # en-ja-translator
+![demo](https://raw.githubusercontent.com/cheripai/en-ja-translator/master/demo/demo.gif)
 
 #### Sources
 - [Parallel Corpus Data](http://opus.nlpl.eu/)
